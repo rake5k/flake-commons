@@ -1,0 +1,23 @@
+name: Build and test
+on: [ push ]
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          # Nix Flakes doesn't work on shallow clones
+          fetch-depth: 0
+      - name: Install nix
+        uses: cachix/install-nix-action@v16
+      - name: Build command
+        run: |
+          nix \
+            --verbose \
+            --log-format bar-with-logs \
+            --keep-going \
+            --show-trace \
+            flake check
+
