@@ -27,7 +27,7 @@
         in
         rec {
 
-          lib = import ./lib { inherit (pkgs) lib; };
+          lib = import ./lib;
 
           checks = {
             pre-commit-check = pre-commit-hooks.lib.${system}.run {
