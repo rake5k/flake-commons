@@ -22,7 +22,9 @@ _is_nixos() {
 }
 
 _is_root() {
-    [[ $(id -u) == 0 ]]
+    local user_id
+    user_id=$(id -u)
+    [[ ${user_id} == 0 ]]
 }
 
 _read() {
@@ -34,7 +36,10 @@ _read() {
     }
 
     local answer
-    read -rp "$(echo -e "\n${BOLD}${PURPLE}${prompt}${RESET}$(_print_default_value) ")" answer
+    local default_value
+    # shellcheck disable=SC2311
+    default_value="$(_print_default_value)"
+    read -rp "$(echo -e "\n${BOLD}${PURPLE}${prompt}${RESET}${default_value} ")" answer
 
     local answer_filled="${answer:-"${default}"}"
 
@@ -52,8 +57,15 @@ _read_boolean() {
         [[ "${default^^}" = "${cap}" ]] && echo "${cap}" || echo "${low}"
     }
 
+    local yes
+    # shellcheck disable=SC2311
+    yes="$(_cap_if_default "y")"
+    local no
+    # shellcheck disable=SC2311
+    no="$(_cap_if_default "n")"
     local answer
-    answer="$(_read "${prompt} ($(_cap_if_default "y")/$(_cap_if_default "n"))")"
+    # shellcheck disable=SC2311
+    answer="$(_read "${prompt} (${yes}/${no})")"
 
     local answer_filled="${answer:-"${default}"}"
 
@@ -69,6 +81,7 @@ _read_enum() {
     local options="${*:2}"
 
     local answer
+    # shellcheck disable=SC2311
     answer="$(_read "${prompt} (one of ${options// /, }):")"
 
     if [[ " ${options[*]} " = *" ${answer} "* ]]; then
