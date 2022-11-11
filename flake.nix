@@ -20,7 +20,7 @@
       };
     in
     flake-utils.lib.eachSystem
-      [ "aarch64-linux" "i686-linux" "x86_64-linux" ]
+      [ "aarch64-linux" "x86_64-linux" ]
       (system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
