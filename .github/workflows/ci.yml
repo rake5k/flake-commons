@@ -22,9 +22,6 @@ jobs:
           # Nix Flakes doesn't work on shallow clones
           fetch-depth: 0
 
-      - name: Install nix
-        uses: cachix/install-nix-action@v18
-
       - name: Build command (aarch64)
         if: matrix.system == 'aarch64'
         uses: Gerschtli/run-on-arch-action@tty
@@ -78,6 +75,10 @@ jobs:
               --option keep-going true \
               --show-trace \
               ${{ matrix.nix-command }}
+
+      - name: Install nix (x86_64)
+        if: matrix.system == 'x86_64'
+        uses: cachix/install-nix-action@v18
 
       - name: Build command (x86_64)
         if: matrix.system == 'x86_64'
