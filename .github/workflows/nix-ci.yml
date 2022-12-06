@@ -1,0 +1,94 @@
+name: Build and test
+on: [ workflow_call ]
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        system:
+          - aarch64
+          - x86_64
+        nix-command:
+          - flake check
+          - develop
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
+          # Nix Flakes doesn't work on shallow clones
+          fetch-depth: 0
+
+      - name: Build command (aarch64)
+        if: matrix.system == 'aarch64'
+        uses: Gerschtli/run-on-arch-action@tty
+        with:
+          arch: aarch64
+          distro: alpine_latest
+          githubToken: ${{ github.token }}
+          dockerRunArgs: --volume /nix:/nix
+          install: apk --no-cache add curl git xz
+          env: |
+            _system: ${{ matrix.system }}-linux
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            USER: root
+          run: |
+            set -euo pipefail
+            mkdir -p /etc/nix
+            cat <<EOF >> /etc/nix/nix.conf
+            max-jobs = auto
+            trusted-users = root
+            experimental-features = nix-command flakes
+            build-users-group =
+            keep-going = true
+            show-trace = true
+            access-tokens = github.com=$GITHUB_TOKEN
+            EOF
+            echo "::group::Install nix"
+            INSTALL_FILE="install"
+            curl \
+              --silent \
+              --show-error \
+              --output "$INSTALL_FILE" \
+              --retry 5 \
+              --retry-all-errors \
+              --fail \
+              --location \
+              "https://nixos.org/nix/install"
+            sh "$INSTALL_FILE" --no-channel-add
+            rm "$INSTALL_FILE"
+            . ${HOME}/.nix-profile/etc/profile.d/nix.sh
+            # FIXME: setting build-hook is needed because default hook `nix __build-remote` is not available
+            function build_hook() {
+              local nix_path="$(which nix)"
+              echo "${nix_path/bin\/nix/libexec/nix/build-remote}"
+            }
+            echo "build-hook = $(build_hook)" >> /etc/nix/nix.conf
+            echo "::group::Build command"
+            git config --global --add safe.directory "$(pwd)"
+            nix \
+              --verbose \
+              --log-format bar-with-logs \
+              --option keep-going true \
+              --show-trace \
+              ${{ matrix.nix-command }}
+
+      - name: Install nix (x86_64)
+        if: matrix.system == 'x86_64'
+        uses: cachix/install-nix-action@v18
+
+      - name: Build command (x86_64)
+        if: matrix.system == 'x86_64'
+        env:
+          _system: ${{ matrix.system }}-linux
+        run: |
+          nix \
+            --verbose \
+            --log-format bar-with-logs \
+            --keep-going \
+            --show-trace \
+            ${{ matrix.nix-command }}
+
