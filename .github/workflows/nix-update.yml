@@ -1,4 +1,4 @@
-name: Update inputs
+name: Nix - Update inputs
 on:
   workflow_call:
     inputs:

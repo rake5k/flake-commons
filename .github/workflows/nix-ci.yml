@@ -1,16 +1,16 @@
-name: Build and test
+name: Nix - Build and test
 on:
   workflow_call:
     inputs:
-      system:
-        description: 'System architecture to run on'
-        required: false
-        default: x86_64
-        type: string
       branch:
         description: 'Branch to build'
         required: false
         default: master
+        type: string
+      system:
+        description: 'System architecture to run on'
+        required: false
+        default: x86_64
         type: string
 
 jobs:
