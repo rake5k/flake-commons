@@ -7,6 +7,16 @@ on:
         required: false
         type: string
         default: 'main'
+      x86_64:
+        description: 'Test update on x86'
+        required: false
+        type: boolean
+        default: true
+      aarch64:
+        description: 'Test update on ARM'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   update:
@@ -44,18 +54,28 @@ jobs:
           branch: ${{ steps.branch.outputs.name }}
           push_options: --force
 
-  build:
+  build_x86_64:
     uses: christianharke/flake-commons/.github/workflows/nix-ci.yml@main
     needs: update
-    if: needs.update.outputs.update_available == 'true'
+    if: needs.update.outputs.update_available == 'true' && inputs.x86_64
     with:
       branch: ${{ needs.update.outputs.branch }}
+      system: x86_64
+
+  build_aarch64:
+    uses: christianharke/flake-commons/.github/workflows/nix-ci.yml@main
+    needs: update
+    if: needs.update.outputs.update_available == 'true' && inputs.aarch64
+    with:
+      branch: ${{ needs.update.outputs.branch }}
+      system: aarch64
 
   merge:
     runs-on: ubuntu-latest
     needs:
       - update
-      - build
+      - build_x86_64
+      - build_aarch64
 
     steps:
       - name: Checkout repository
