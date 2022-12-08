@@ -76,6 +76,7 @@ jobs:
       - update
       - build_x86_64
       - build_aarch64
+    if: always()
 
     steps:
       - name: Checkout repository
