@@ -6,7 +6,7 @@ on:
         description: 'Base branch to update'
         required: false
         type: string
-        default: 'main'
+        default: main
       x86_64:
         description: 'Test update on x86'
         required: false

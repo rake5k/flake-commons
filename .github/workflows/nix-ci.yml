@@ -5,7 +5,7 @@ on:
       branch:
         description: 'Branch to build'
         required: false
-        default: master
+        default: main
         type: string
       system:
         description: 'System architecture to run on'
