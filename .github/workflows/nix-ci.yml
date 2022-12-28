@@ -91,6 +91,10 @@ jobs:
               --show-trace \
               ${{ matrix.nix-command }}
 
+      - name: Free Disk Space (Ubuntu)
+        if: matrix.system == 'x86_64'
+        uses: marksiasol/free-disk-space@main
+
       - name: Install nix (x86_64)
         if: matrix.system == 'x86_64'
         uses: cachix/install-nix-action@v18
