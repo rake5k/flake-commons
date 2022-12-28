@@ -7,6 +7,11 @@ on:
         required: false
         default: main
         type: string
+      nix-extra-command:
+        description: 'Extra Nix command to run'
+        required: false
+        default: flake show
+        type: string
       system:
         description: 'System architecture to run on'
         required: false
@@ -24,6 +29,9 @@ jobs:
         nix-command:
           - flake check
           - develop
+        include:
+          - nix-command: ${{ inputs.nix-extra-command }}
+            system: ${{ inputs.system }}
 
     steps:
       - name: Checkout repository
