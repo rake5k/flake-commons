@@ -7,6 +7,11 @@ on:
         required: false
         type: string
         default: main
+      nix-check-command:
+        description: 'Command to test the updated flake'
+        required: false
+        type: string
+        default: 'flake check'
       x86_64:
         description: 'Test update on x86'
         required: false
@@ -61,6 +66,7 @@ jobs:
     if: needs.update.outputs.update_available == 'true' && inputs.x86_64
     with:
       branch: ${{ needs.update.outputs.branch }}
+      nix-command: ${{ inputs.nix-check-command }}
       system: x86_64
 
   build_aarch64:
@@ -69,6 +75,7 @@ jobs:
     if: needs.update.outputs.update_available == 'true' && inputs.aarch64
     with:
       branch: ${{ needs.update.outputs.branch }}
+      nix-command: ${{ inputs.nix-check-command }}
       system: aarch64
 
   merge:
