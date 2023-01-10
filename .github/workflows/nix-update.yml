@@ -22,6 +22,10 @@ on:
         required: false
         type: boolean
         default: false
+    secrets:
+      CACHIX_AUTH_TOKEN:
+        required: false
+        description: 'Token to authenticate against Cachix'
 
 jobs:
   update:
