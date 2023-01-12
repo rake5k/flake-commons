@@ -98,6 +98,8 @@ jobs:
       - name: Free Disk Space (Ubuntu)
         if: matrix.system == 'x86_64'
         uses: jlumbroso/free-disk-space@main
+        with:
+          large-packages: false
 
       - name: Install nix (x86_64)
         if: matrix.system == 'x86_64'
