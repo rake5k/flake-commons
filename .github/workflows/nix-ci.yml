@@ -89,10 +89,8 @@ jobs:
             echo "::group::Build command"
             git config --global --add safe.directory "$(pwd)"
             nix \
-              --verbose \
-              --log-format bar-with-logs \
-              --option keep-going true \
-              --show-trace \
+              --print-build-logs \
+              --keep-going \
               ${{ matrix.nix-command }}
 
       - name: Free Disk Space (Ubuntu)
@@ -118,9 +116,7 @@ jobs:
           _system: ${{ matrix.system }}-linux
         run: |
           nix \
-            --verbose \
-            --log-format bar-with-logs \
+            --print-build-logs \
             --keep-going \
-            --show-trace \
             ${{ matrix.nix-command }}
 
