@@ -71,16 +71,16 @@ jobs:
     with:
       branch: ${{ needs.update.outputs.branch }}
       nix-command: ${{ inputs.nix-check-command }}
-      system: x86_64
+      system: x86_64-linux
 
   build_aarch64:
-    uses: christianharke/flake-commons/.github/workflows/nix-ci.yml@main
+    uses: christianharke/flake-commons/.github/workflows/nix-ci-arm.yml@main
     needs: update
     if: needs.update.outputs.update_available == 'true' && inputs.aarch64
     with:
       branch: ${{ needs.update.outputs.branch }}
       nix-command: ${{ inputs.nix-check-command }}
-      system: aarch64
+      system: aarch64-linux
 
   merge:
     runs-on: ubuntu-latest
