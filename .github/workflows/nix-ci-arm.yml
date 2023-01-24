@@ -67,7 +67,7 @@ jobs:
               --retry-all-errors \
               --fail \
               --location \
-              "https://releases.nixos.org/nix/nix-2.11.1/install"
+              "https://releases.nixos.org/nix/nix-2.13.1/install"
             sh "$INSTALL_FILE" --no-channel-add
             rm "$INSTALL_FILE"
             . ${HOME}/.nix-profile/etc/profile.d/nix.sh
