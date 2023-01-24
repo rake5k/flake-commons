@@ -15,7 +15,6 @@ on:
       system:
         description: 'System architecture to run on'
         required: false
-        default: x86_64
         type: string
     secrets:
       CACHIX_AUTH_TOKEN:
@@ -24,10 +23,11 @@ on:
 
 jobs:
   nix:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest]
         system:
           - ${{ inputs.system }}
         nix-command:
@@ -41,8 +41,8 @@ jobs:
           # Nix Flakes doesn't work on shallow clones
           fetch-depth: 0
 
-      - name: Build command (aarch64)
-        if: matrix.system == 'aarch64'
+      - name: Build command (aarch64-linux)
+        if: matrix.system == 'aarch64-linux'
         uses: uraimo/run-on-arch-action@release-3.0.0
         with:
           arch: aarch64
@@ -51,7 +51,6 @@ jobs:
           dockerRunArgs: --volume /nix:/nix
           install: apk --no-cache add curl git xz
           env: |
-            _system: ${{ matrix.system }}-linux
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             USER: root
           run: |
@@ -93,27 +92,25 @@ jobs:
               --keep-going \
               ${{ matrix.nix-command }}
 
-      - name: Free Disk Space (Ubuntu)
-        if: matrix.system == 'x86_64'
+      - name: Free Disk Space
+        if: matrix.system != 'aarch64-linux'
         uses: jlumbroso/free-disk-space@main
         with:
           large-packages: false
 
-      - name: Install nix (x86_64)
-        if: matrix.system == 'x86_64'
+      - name: Install nix
+        if: matrix.system != 'aarch64-linux'
         uses: cachix/install-nix-action@v18
 
-      - name: Use nix cache (x86_64)
-        if: matrix.system == 'x86_64'
+      - name: Use nix cache
+        if: matrix.system != 'aarch64-linux'
         uses: cachix/cachix-action@v12
         with:
           name: christianharke
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-      - name: Build command (x86_64)
-        if: matrix.system == 'x86_64'
-        env:
-          _system: ${{ matrix.system }}-linux
+      - name: Build command
+        if: matrix.system != 'aarch64-linux'
         run: |
           nix \
             --print-build-logs \
