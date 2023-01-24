@@ -23,6 +23,7 @@ on:
 
 jobs:
   nix:
+    if: inputs.system != 'aarch64-linux'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -30,8 +31,6 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         system:
           - ${{ inputs.system }}
-        nix-command:
-          - ${{ inputs.nix-command }}
 
     steps:
       - name: Checkout repository
@@ -41,8 +40,39 @@ jobs:
           # Nix Flakes doesn't work on shallow clones
           fetch-depth: 0
 
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          large-packages: false
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v18
+
+      - name: Use nix cache
+        uses: cachix/cachix-action@v12
+        with:
+          name: christianharke
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: Build command
+        run: |
+          nix \
+            --print-build-logs \
+            --keep-going \
+            ${{ inputs.nix-command }}
+
+  nix-arm:
+    if: inputs.system == 'aarch64-linux'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
+          # Nix Flakes doesn't work on shallow clones
+          fetch-depth: 0
+
       - name: Build command (aarch64-linux)
-        if: matrix.system == 'aarch64-linux'
         uses: uraimo/run-on-arch-action@release-3.0.0
         with:
           arch: aarch64
@@ -90,30 +120,5 @@ jobs:
             nix \
               --print-build-logs \
               --keep-going \
-              ${{ matrix.nix-command }}
-
-      - name: Free Disk Space
-        if: matrix.system != 'aarch64-linux'
-        uses: jlumbroso/free-disk-space@main
-        with:
-          large-packages: false
-
-      - name: Install nix
-        if: matrix.system != 'aarch64-linux'
-        uses: cachix/install-nix-action@v18
-
-      - name: Use nix cache
-        if: matrix.system != 'aarch64-linux'
-        uses: cachix/cachix-action@v12
-        with:
-          name: christianharke
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-
-      - name: Build command
-        if: matrix.system != 'aarch64-linux'
-        run: |
-          nix \
-            --print-build-logs \
-            --keep-going \
-            ${{ matrix.nix-command }}
+              ${{ inputs.nix-command }}
 
