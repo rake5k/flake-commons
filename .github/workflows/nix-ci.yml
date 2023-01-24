@@ -43,7 +43,7 @@ jobs:
 
       - name: Build command (aarch64)
         if: matrix.system == 'aarch64'
-        uses: Gerschtli/run-on-arch-action@tty
+        uses: uraimo/run-on-arch-action@release-3.0.0
         with:
           arch: aarch64
           distro: alpine_latest
