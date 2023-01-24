@@ -14,7 +14,6 @@ on:
         type: string
       system:
         description: 'System architecture to run on'
-        default: x86_64-linux
         required: false
         type: string
     secrets:
@@ -33,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        if: startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux')
+        if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
         uses: actions/checkout@v3
         with:
           ref: ${{ inputs.branch }}
@@ -41,27 +40,26 @@ jobs:
           fetch-depth: 0
 
       - name: Free Disk Space
-        if: startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux')
+        if: (inputs.system == null || endsWith(inputs.system, 'linux')) && startsWith(matrix.os, 'ubuntu')
         uses: jlumbroso/free-disk-space@main
         with:
           large-packages: false
 
       - name: Install nix
-        if: startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux')
+        if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
         uses: cachix/install-nix-action@v18
 
       - name: Use nix cache
-        if: startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux')
+        if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
         uses: cachix/cachix-action@v12
         with:
           name: christianharke
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Build command
-        if: startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux')
+        if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
         run: |
           nix \
             --print-build-logs \
             --keep-going \
             ${{ inputs.nix-command }}
-
