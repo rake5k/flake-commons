@@ -29,8 +29,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        system:
-          - ${{ inputs.system }}
 
     steps:
       - name: Checkout repository
