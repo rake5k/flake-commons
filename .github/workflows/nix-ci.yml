@@ -45,7 +45,7 @@ jobs:
 
       - name: Install nix
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
-        uses: cachix/install-nix-action@v19
+        uses: cachix/install-nix-action@v20
 
       - name: Use nix cache
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
