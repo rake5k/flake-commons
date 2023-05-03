@@ -42,6 +42,7 @@
         {
           pre-commit-check = pre-commit-hooks.lib.${system}.run {
             src = self;
+            default_stages = [ "manual" "push" ];
             hooks = {
               nixpkgs-fmt.enable = true;
               shellcheck.enable = true;
