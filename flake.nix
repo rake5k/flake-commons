@@ -13,15 +13,6 @@
     let
       name = "flake-commons";
 
-      overlay = final: prev: {
-        ${name} = prev.${name}.overrideAttrs (old: {
-          src = builtins.path {
-            inherit name;
-            path = ./.;
-          };
-        });
-      };
-
       # System types to support.
       supportedSystems = [ "aarch64-linux" "x86_64-darwin" "x86_64-linux" ];
 
@@ -44,10 +35,55 @@
             src = self;
             default_stages = [ "manual" "push" ];
             hooks = {
+              # Nix
+              deadnix.enable = true;
               nixpkgs-fmt.enable = true;
+              statix.enable = true;
+
+              actionlint.enable = true;
               shellcheck.enable = true;
+              markdownlint.enable = true;
+            };
+            settings = {
+              # https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.jsonc
+              markdownlint.config = {
+                "MD013" = {
+                  code_blocks = false;
+                  line_length = 100;
+                  tables = false;
+                };
+              };
             };
           };
+
+          deadnix = pkgs.runCommand "check-deadnix"
+            { buildInputs = [ pkgs.deadnix ]; }
+            ''
+              deadnix
+              touch ${placeholder "out"}
+            '';
+
+          nixpkgs-fmt = pkgs.runCommand "check-nixpkgs-fmt"
+            { buildInputs = [ pkgs.nixpkgs-fmt ]; }
+            ''
+              nixpkgs-fmt --check ${self}
+              touch ${placeholder "out"}
+            '';
+
+          statix = pkgs.runCommand "check-statix"
+            { buildInputs = [ pkgs.statix ]; }
+            ''
+              statix check
+              touch ${placeholder "out"}
+            '';
+
+          markdownlint = pkgs.runCommand "check-markdownlint"
+            { buildInputs = [ pkgs.nodePackages.markdownlint-cli2 ]; }
+            ''
+              cd ${self}
+              markdownlint-cli2
+              touch ${placeholder "out"}
+            '';
 
           shellcheck = pkgs.runCommand "shellcheck" { } ''
             shopt -s globstar
@@ -69,14 +105,11 @@
               # banner printing on enter
               figlet
               lolcat
-
-              nixpkgs-fmt
-              shellcheck
             ];
 
             shellHook = ''
               figlet ${name} | lolcat --freq 0.5
-              ${(self.checks.${system}.pre-commit-check).shellHook}
+              ${self.checks.${system}.pre-commit-check.shellHook}
             '';
           };
         });

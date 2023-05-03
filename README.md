@@ -12,4 +12,3 @@ Common library for Nix Flakes
 [ci-badge]: https://github.com/christianharke/flake-commons/actions/workflows/ci.yml/badge.svg
 [update]: https://github.com/christianharke/flake-commons/actions/workflows/update.yml
 [update-badge]: https://github.com/christianharke/flake-commons/actions/workflows/update.yml/badge.svg
-
