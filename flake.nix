@@ -41,7 +41,7 @@
         in
         {
           pre-commit-check = pre-commit-hooks.lib.${system}.run {
-            src = ./.;
+            src = self;
             hooks = {
               nixpkgs-fmt.enable = true;
               shellcheck.enable = true;
