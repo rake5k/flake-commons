@@ -31,6 +31,10 @@ jobs:
         os: [ubuntu-latest, macos-latest]
 
     steps:
+      - name: Free Disk Space
+        if: (inputs.system == null || endsWith(inputs.system, 'linux')) && startsWith(matrix.os, 'ubuntu')
+        uses: christianharke/free-disk-space@docker-images
+
       - name: Checkout repository
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
         uses: actions/checkout@v3
@@ -38,10 +42,6 @@ jobs:
           ref: ${{ inputs.branch }}
           # Nix Flakes doesn't work on shallow clones
           fetch-depth: 0
-
-      - name: Free Disk Space
-        if: (inputs.system == null || endsWith(inputs.system, 'linux')) && startsWith(matrix.os, 'ubuntu')
-        uses: christianharke/free-disk-space@docker-images
 
       - name: Install nix
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
