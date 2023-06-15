@@ -33,7 +33,7 @@ jobs:
     steps:
       - name: Free Disk Space
         if: (inputs.system == null || endsWith(inputs.system, 'linux')) && startsWith(matrix.os, 'ubuntu')
-        uses: christianharke/free-disk-space@docker-images
+        uses: christianharke/free-disk-space@alternative-apt-mirror
 
       - name: Checkout repository
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
