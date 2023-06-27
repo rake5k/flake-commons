@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install nix
-        uses: cachix/install-nix-action@v20
+        uses: DeterminateSystems/nix-installer-action@v4
 
       - name: Update inputs
         run: nix flake update
