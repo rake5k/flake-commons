@@ -45,7 +45,7 @@ jobs:
           token: ${{ secrets.PUSH_PAT || github.token }}
           fetch-depth: 0
 
-      - name: Install nix
+      - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
 
       - name: Update inputs

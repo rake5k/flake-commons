@@ -34,7 +34,7 @@ jobs:
           # Nix Flakes doesn't work on shallow clones
           fetch-depth: 0
 
-      - name: Build command
+      - name: Build and test
         uses: uraimo/run-on-arch-action@release-3.0.0
         with:
           arch: aarch64
@@ -77,7 +77,7 @@ jobs:
               echo "${nix_path/bin\/nix/libexec/nix/build-remote}"
             }
             echo "build-hook = $(build_hook)" >> /etc/nix/nix.conf
-            echo "::group::Build command"
+            echo "::group::Build and test"
             git config --global --add safe.directory "$(pwd)"
             nix \
               --print-build-logs \
