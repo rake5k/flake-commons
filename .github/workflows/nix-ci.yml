@@ -34,9 +34,6 @@ jobs:
       - name: Free disk space
         if: (inputs.system == null || endsWith(inputs.system, 'linux')) && startsWith(matrix.os, 'ubuntu')
         uses: rake5k/free-disk-space@apt-mirror-fix
-        with:
-          allow-apt-mirrors: true
-          apt-mirror-country: CH
 
       - name: Checkout repository
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
