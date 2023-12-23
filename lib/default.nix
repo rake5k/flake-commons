@@ -9,6 +9,7 @@ let
   attrs = callPackage ./attrs.nix { };
   fileList = callPackage ./file-list.nix { };
   script = callPackage ./script { };
+  sys = callPackage ./sys { };
 
   homeBasePath = rootPath + "/home";
   hostsBasePath = rootPath + "/hosts";
@@ -20,6 +21,7 @@ in
   inherit (attrs) attrsToList genAttrs';
   inherit (fileList) getFileList getRecursiveNixFileList getRecursiveDefaultNixFileList;
   inherit (script) mkScript;
+  inherit sys;
 
   mkHomePath = p: homeBasePath + p;
   mkHostPath = host: p: hostsBasePath + "/${host}" + p;
