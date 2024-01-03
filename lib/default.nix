@@ -9,7 +9,7 @@ let
   attrs = callPackage ./attrs.nix { };
   fileList = callPackage ./file-list.nix { };
   script = callPackage ./script { };
-  sys = callPackage ./sys { };
+  sys = callPackage ./sys.nix { };
 
   homeBasePath = rootPath + "/home";
   hostsBasePath = rootPath + "/hosts";
