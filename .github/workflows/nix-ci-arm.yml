@@ -35,7 +35,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build and test
-        uses: uraimo/run-on-arch-action@release-3.0.0
+        uses: uraimo/run-on-arch-action@v2
         with:
           arch: aarch64
           distro: alpine_latest
