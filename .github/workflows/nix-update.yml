@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.PUSH_PAT || github.token }}
           fetch-depth: 0
@@ -59,7 +59,7 @@ jobs:
         run: git switch -c ${{ steps.branch.outputs.name }}
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         id: commit
         with:
           commit_author: Christian Harke <christian@harke.ch>
@@ -95,7 +95,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
