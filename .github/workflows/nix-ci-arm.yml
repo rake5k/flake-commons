@@ -85,8 +85,5 @@ jobs:
 
             echo "::group::Build and test"
             git config --global --add safe.directory "$(pwd)"
-            nix \
-              --print-build-logs \
-              --keep-going \
-              ${{ inputs.nix-command }}
+            nix ${{ inputs.nix-command }}
 

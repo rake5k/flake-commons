@@ -62,6 +62,6 @@ jobs:
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
         run: |
           nix \
-            --print-build-logs \
+            --show-trace \
             --keep-going \
             ${{ inputs.nix-command }}
