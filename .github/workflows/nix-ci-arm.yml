@@ -77,6 +77,12 @@ jobs:
               echo "${nix_path/bin\/nix/libexec/nix/build-remote}"
             }
             echo "build-hook = $(build_hook)" >> /etc/nix/nix.conf
+
+            echo "::group::Setup cachix"
+            nix-env --quiet -j8 -iA cachix -f https://cachix.org/api/v1/install
+            cachix --version
+            cachix use nix-on-droid
+
             echo "::group::Build and test"
             git config --global --add safe.directory "$(pwd)"
             nix \
