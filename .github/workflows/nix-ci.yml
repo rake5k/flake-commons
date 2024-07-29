@@ -45,7 +45,7 @@ jobs:
 
       - name: Install Nix
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
-        uses: DeterminateSystems/nix-installer-action@v12
+        uses: DeterminateSystems/nix-installer-action@v13
 
       - name: Use GitHub Nix Cache
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
