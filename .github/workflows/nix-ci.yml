@@ -33,7 +33,7 @@ jobs:
     steps:
       - name: Free disk space
         if: (inputs.system == null || endsWith(inputs.system, 'linux')) && startsWith(matrix.os, 'ubuntu')
-        uses: rake5k/free-disk-space@apt-mirror-fix
+        uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Checkout repository
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
