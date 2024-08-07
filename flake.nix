@@ -42,15 +42,15 @@
 
               actionlint.enable = true;
               shellcheck.enable = true;
-              markdownlint.enable = true;
-            };
-            settings = {
-              # https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.jsonc
-              markdownlint.config = {
-                "MD013" = {
-                  code_blocks = false;
-                  line_length = 100;
-                  tables = false;
+              markdownlint = {
+                enable = true;
+                settings.configuration = {
+                  # https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.jsonc
+                  "MD013" = {
+                    code_blocks = false;
+                    line_length = 100;
+                    tables = false;
+                  };
                 };
               };
             };
