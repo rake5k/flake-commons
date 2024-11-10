@@ -1,0 +1,3 @@
+disable=SC1008
+enable=all
+external-sources=true

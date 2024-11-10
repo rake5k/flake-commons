@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 RESET="\033[0m"
 BOLD="\033[1m"
 # shellcheck disable=SC2034

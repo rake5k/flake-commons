@@ -1,136 +1,137 @@
-name: Nix - Update inputs
-on:
+---
+name: "Nix - Update inputs"
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       base-branch:
-        description: 'Base branch to update'
+        description: "Base branch to update"
         required: false
-        type: string
-        default: main
+        type: "string"
+        default: "main"
       nix-check-command:
-        description: 'Command to test the updated flake'
+        description: "Command to test the updated flake"
         required: false
-        type: string
-        default: 'flake check'
+        type: "string"
+        default: "flake check"
       x86_64:
-        description: 'Test update on x86'
+        description: "Test update on x86"
         required: false
-        type: boolean
+        type: "boolean"
         default: true
       aarch64:
-        description: 'Test update on ARM'
+        description: "Test update on ARM"
         required: false
-        type: boolean
+        type: "boolean"
         default: false
     secrets:
       CACHIX_AUTH_TOKEN:
         required: false
-        description: 'Token to authenticate against Cachix'
+        description: "Token to authenticate against Cachix"
       DEPLOY_KEY_SUBMODULES:
         required: false
-        description: 'Deploy key for checking out submodules'
+        description: "Deploy key for checking out submodules"
       KNOWN_HOSTS:
         required: false
-        description: 'Content of the known_hosts file'
+        description: "Content of the known_hosts file"
       PUSH_PAT:
         required: false
-        description: 'Token to authenticate against GitHub on push trigger'
+        description: "Token to authenticate against GitHub on push trigger"
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
 
     outputs:
-      branch: ${{ steps.branch.outputs.name }}
-      update_available: ${{ steps.commit.outputs.changes_detected }}
+      branch: "${{ steps.branch.outputs.name }}"
+      update_available: "${{ steps.commit.outputs.changes_detected }}"
 
     steps:
-      - name: Configure SSH agent
+      - name: "Configure SSH agent"
         env:
-          DEPLOY_KEY_SUBMODULES: ${{ secrets.DEPLOY_KEY_SUBMODULES }}
-        if: ${{ env.DEPLOY_KEY_SUBMODULES != '' }}
-        uses: webfactory/ssh-agent@v0.9.0
+          DEPLOY_KEY_SUBMODULES: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
+        if: "${{ env.DEPLOY_KEY_SUBMODULES != '' }}"
+        uses: "webfactory/ssh-agent@v0.9.0"
         with:
           ssh-private-key: |
             ${{ secrets.DEPLOY_KEY_SUBMODULES }}
 
-      - name: Add known_hosts file
+      - name: "Add known_hosts file"
         env:
-          KNOWN_HOSTS: ${{ secrets.KNOWN_HOSTS }}
-        if: ${{ env.KNOWN_HOSTS != '' }}
+          KNOWN_HOSTS: "${{ secrets.KNOWN_HOSTS }}"
+        if: "${{ env.KNOWN_HOSTS != '' }}"
         run: |
           mkdir -p ~/.ssh && echo '${{ secrets.KNOWN_HOSTS }}' > ~/.ssh/known_hosts
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: "Checkout repository"
+        uses: "actions/checkout@v4"
         with:
-          token: ${{ secrets.PUSH_PAT || github.token }}
+          token: "${{ secrets.PUSH_PAT || github.token }}"
           fetch-depth: 0
-          ssh-key: ${{ secrets.DEPLOY_KEY_SUBMODULES }}
-          submodules: recursive
+          ssh-key: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
+          submodules: "recursive"
 
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
+      - name: "Install Nix"
+        uses: "DeterminateSystems/nix-installer-action@v14"
 
-      - name: Update inputs
-        run: nix flake update
+      - name: "Update inputs"
+        run: "nix flake update"
 
-      - name: Set branch name output
-        id: branch
-        run: echo "name=ci/automatic-update-$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+      - name: "Set branch name output"
+        id: "branch"
+        run: "echo \"name=ci/automatic-update-$(date +%Y-%m-%d)\" >> \"$GITHUB_OUTPUT\""
 
-      - name: Create branch locally
-        run: git switch -c ${{ steps.branch.outputs.name }}
+      - name: "Create branch locally"
+        run: "git switch -c ${{ steps.branch.outputs.name }}"
 
-      - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        id: commit
+      - name: "Commit changes"
+        uses: "stefanzweifel/git-auto-commit-action@v5"
+        id: "commit"
         with:
-          commit_author: Christian Harke <christian@harke.ch>
+          commit_author: "Christian Harke <christian@harke.ch>"
           commit_message: "flake.inputs: automatic update"
-          branch: ${{ steps.branch.outputs.name }}
-          push_options: --force
+          branch: "${{ steps.branch.outputs.name }}"
+          push_options: "--force"
 
   build_x86_64:
-    uses: rake5k/flake-commons/.github/workflows/nix-ci.yml@main
-    needs: update
-    if: needs.update.outputs.update_available == 'true' && inputs.x86_64
+    uses: "rake5k/flake-commons/.github/workflows/nix-ci.yml@main"
+    needs: "update"
+    if: "needs.update.outputs.update_available == 'true' && inputs.x86_64"
     with:
-      branch: ${{ needs.update.outputs.branch }}
-      nix-command: ${{ inputs.nix-check-command }}
-      system: x86_64-linux
+      branch: "${{ needs.update.outputs.branch }}"
+      nix-command: "${{ inputs.nix-check-command }}"
+      system: "x86_64-linux"
 
   build_aarch64:
-    uses: rake5k/flake-commons/.github/workflows/nix-ci-arm.yml@main
-    needs: update
-    if: needs.update.outputs.update_available == 'true' && inputs.aarch64
+    uses: "rake5k/flake-commons/.github/workflows/nix-ci-arm.yml@main"
+    needs: "update"
+    if: "needs.update.outputs.update_available == 'true' && inputs.aarch64"
     with:
-      branch: ${{ needs.update.outputs.branch }}
-      nix-command: ${{ inputs.nix-check-command }}
-      system: aarch64-linux
+      branch: "${{ needs.update.outputs.branch }}"
+      nix-command: "${{ inputs.nix-check-command }}"
+      system: "aarch64-linux"
 
   merge:
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     needs:
-      - update
-      - build_x86_64
-      - build_aarch64
-    if: always() && needs.update.outputs.update_available == 'true' && contains(needs.*.result, 'success') && !(contains(needs.*.result, 'failure'))
+      - "update"
+      - "build_x86_64"
+      - "build_aarch64"
+    if: "always() && needs.update.outputs.update_available == 'true' && contains(needs.*.result, 'success') && !(contains(needs.*.result, 'failure'))"
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: "Checkout repository"
+        uses: "actions/checkout@v4"
         with:
           fetch-depth: 0
 
-      - name: Check if update branch is behind ${{ inputs.base-branch }}
-        run: git diff origin/${{ needs.update.outputs.branch }}...origin/${{ inputs.base-branch }} --exit-code
+      - name: "Check if update branch is behind ${{ inputs.base-branch }}"
+        run: "git diff origin/${{ needs.update.outputs.branch }}...origin/${{ inputs.base-branch }} --exit-code"
 
-      - name: Merge update into ${{ inputs.base-branch }}
-        run: git merge origin/${{ needs.update.outputs.branch }}
+      - name: "Merge update into ${{ inputs.base-branch }}"
+        run: "git merge origin/${{ needs.update.outputs.branch }}"
 
-      - name: Push ${{ inputs.base-branch }}
-        run: git push origin ${{ inputs.base-branch }}
+      - name: "Push ${{ inputs.base-branch }}"
+        run: "git push origin ${{ inputs.base-branch }}"
 
-      - name: Delete update branch
-        run: git push --delete origin ${{ needs.update.outputs.branch }}
+      - name: "Delete update branch"
+        run: "git push --delete origin ${{ needs.update.outputs.branch }}"

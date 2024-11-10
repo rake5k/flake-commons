@@ -9,12 +9,18 @@
     };
   };
 
-  outputs = { self, nixpkgs, pre-commit-hooks }:
+  outputs =
+    { self, nixpkgs, ... }:
     let
       name = "flake-commons";
 
       # System types to support.
-      supportedSystems = [ "aarch64-darwin" "aarch64-linux" "x86_64-darwin" "x86_64-linux" ];
+      supportedSystems = [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "x86_64-linux"
+      ];
 
       # Helper function to generate an attrset '{ x86_64-linux = f "x86_64-linux"; ... }'.
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
@@ -26,76 +32,28 @@
 
       lib = import ./lib;
 
-      checks = forAllSystems (system:
+      formatter = forAllSystems (system: nixpkgs.legacyPackages."${system}".nixfmt-rfc-style);
+
+      checks = forAllSystems (
+        system:
         let
           pkgs = nixpkgsFor.${system};
         in
-        {
-          pre-commit-check = pre-commit-hooks.lib.${system}.run {
-            src = self;
-            default_stages = [ "manual" "push" ];
-            hooks = {
-              # Nix
-              deadnix.enable = true;
-              nixpkgs-fmt.enable = true;
-              statix.enable = true;
+        import ./lib/checks {
+          inherit pkgs;
+          flake = self;
+        }
+      );
 
-              actionlint.enable = true;
-              shellcheck.enable = true;
-              markdownlint = {
-                enable = true;
-                settings.configuration = {
-                  # https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.jsonc
-                  "MD013" = {
-                    code_blocks = false;
-                    line_length = 100;
-                    tables = false;
-                  };
-                };
-              };
-            };
-          };
-
-          deadnix = pkgs.runCommand "check-deadnix"
-            { buildInputs = [ pkgs.deadnix ]; }
-            ''
-              deadnix
-              touch ${placeholder "out"}
-            '';
-
-          nixpkgs-fmt = pkgs.runCommand "check-nixpkgs-fmt"
-            { buildInputs = [ pkgs.nixpkgs-fmt ]; }
-            ''
-              nixpkgs-fmt --check ${self}
-              touch ${placeholder "out"}
-            '';
-
-          statix = pkgs.runCommand "check-statix"
-            { buildInputs = [ pkgs.statix ]; }
-            ''
-              statix check
-              touch ${placeholder "out"}
-            '';
-
-          markdownlint = pkgs.runCommand "check-markdownlint"
-            { buildInputs = [ pkgs.nodePackages.markdownlint-cli2 ]; }
-            ''
-              cd ${self}
-              markdownlint-cli2
-              touch ${placeholder "out"}
-            '';
-
-          shellcheck = pkgs.runCommand "shellcheck" { } ''
-            shopt -s globstar
-            echo 'Running shellcheck...'
-            ${pkgs.shellcheck}/bin/shellcheck --check-sourced --enable all --external-sources --shell bash ${./.}/**/*.sh
-            touch ${placeholder "out"}
-          '';
-        });
-
-      devShells = forAllSystems (system:
+      devShells = forAllSystems (
+        system:
         let
           pkgs = nixpkgsFor.${system};
+          preCommitShellHook =
+            (import ./lib/pre-commit-checks {
+              inherit pkgs;
+              flake = self;
+            }).shellHook;
         in
         {
           default = pkgs.mkShell {
@@ -109,9 +67,10 @@
 
             shellHook = ''
               figlet ${name} | lolcat --freq 0.5
-              ${self.checks.${system}.pre-commit-check.shellHook}
+              ${preCommitShellHook}
             '';
           };
-        });
+        }
+      );
     };
 }

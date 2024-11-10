@@ -1,74 +1,75 @@
-name: Nix - Build and test
-on:
+---
+name: "Nix - Build and test"
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       branch:
-        description: 'Branch to build'
+        description: "Branch to build"
         required: false
-        default: main
-        type: string
+        default: "main"
+        type: "string"
       nix-command:
-        description: 'Extra Nix command to run'
+        description: "Extra Nix command to run"
         required: false
-        default: flake check
-        type: string
+        default: "flake check"
+        type: "string"
       system:
-        description: 'System architecture to run on'
+        description: "System architecture to run on"
         required: false
-        default: aarch64-linux
-        type: string
+        default: "aarch64-linux"
+        type: "string"
     secrets:
       CACHIX_AUTH_TOKEN:
         required: false
-        description: 'Token to authenticate against Cachix'
+        description: "Token to authenticate against Cachix"
       DEPLOY_KEY_SUBMODULES:
         required: false
-        description: 'Deploy key for checking out submodules'
+        description: "Deploy key for checking out submodules"
       KNOWN_HOSTS:
         required: false
-        description: 'Content of the known_hosts file'
+        description: "Content of the known_hosts file"
 
 jobs:
   nix-arm:
-    if: inputs.system == 'aarch64-linux'
-    runs-on: ubuntu-latest
+    if: "inputs.system == 'aarch64-linux'"
+    runs-on: "ubuntu-latest"
     steps:
-      - name: Configure SSH agent
+      - name: "Configure SSH agent"
         env:
-          DEPLOY_KEY_SUBMODULES: ${{ secrets.DEPLOY_KEY_SUBMODULES }}
-        if: ${{ env.DEPLOY_KEY_SUBMODULES != '' }}
-        uses: webfactory/ssh-agent@v0.9.0
+          DEPLOY_KEY_SUBMODULES: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
+        if: "${{ env.DEPLOY_KEY_SUBMODULES != '' }}"
+        uses: "webfactory/ssh-agent@v0.9.0"
         with:
           ssh-private-key: |
             ${{ secrets.DEPLOY_KEY_SUBMODULES }}
 
-      - name: Add known_hosts file
+      - name: "Add known_hosts file"
         env:
-          KNOWN_HOSTS: ${{ secrets.KNOWN_HOSTS }}
-        if: ${{ env.KNOWN_HOSTS != '' }}
+          KNOWN_HOSTS: "${{ secrets.KNOWN_HOSTS }}"
+        if: "${{ env.KNOWN_HOSTS != '' }}"
         run: |
           mkdir -p ~/.ssh && echo '${{ secrets.KNOWN_HOSTS }}' > ~/.ssh/known_hosts
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: "Checkout repository"
+        uses: "actions/checkout@v4"
         with:
-          ref: ${{ inputs.branch }}
+          ref: "${{ inputs.branch }}"
           # Nix Flakes doesn't work on shallow clones
           fetch-depth: 0
-          ssh-key: ${{ secrets.DEPLOY_KEY_SUBMODULES }}
-          submodules: recursive
+          ssh-key: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
+          submodules: "recursive"
 
-      - name: Build and test
-        uses: uraimo/run-on-arch-action@v2
+      - name: "Build and test"
+        uses: "uraimo/run-on-arch-action@v2"
         with:
-          arch: aarch64
-          distro: alpine_latest
-          githubToken: ${{ github.token }}
-          dockerRunArgs: --volume /nix:/nix
-          install: apk --no-cache add curl git xz
+          arch: "aarch64"
+          distro: "alpine_latest"
+          githubToken: "${{ github.token }}"
+          dockerRunArgs: "--volume /nix:/nix"
+          install: "apk --no-cache add curl git xz"
           env: |
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            USER: root
+            GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+            USER: "root"
           run: |
             set -euo pipefail
             mkdir -p /etc/nix
@@ -107,4 +108,3 @@ jobs:
               --print-build-logs \
               --keep-going \
               ${{ inputs.nix-command }}
-
