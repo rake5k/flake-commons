@@ -44,12 +44,18 @@ jobs:
           tool-cache: true
 
       - name: Configure SSH agent
+        env:
+          DEPLOY_KEY_SUBMODULES: ${{ secrets.DEPLOY_KEY_SUBMODULES }}
+        if: ${{ env.DEPLOY_KEY_SUBMODULES != '' }}
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: |
             ${{ secrets.DEPLOY_KEY_SUBMODULES }}
 
       - name: Add known_hosts file
+        env:
+          KNOWN_HOSTS: ${{ secrets.KNOWN_HOSTS }}
+        if: ${{ env.KNOWN_HOSTS != '' }}
         run: |
           mkdir -p ~/.ssh && echo '${{ secrets.KNOWN_HOSTS }}' > ~/.ssh/known_hosts
 
