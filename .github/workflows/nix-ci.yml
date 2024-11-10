@@ -20,6 +20,12 @@ on:
       CACHIX_AUTH_TOKEN:
         required: false
         description: 'Token to authenticate against Cachix'
+      DEPLOY_KEY_SUBMODULES:
+        required: false
+        description: 'Deploy key for checking out submodules'
+      KNOWN_HOSTS:
+        required: false
+        description: 'Content of the known_hosts file'
 
 jobs:
   nix:
@@ -37,6 +43,16 @@ jobs:
         with:
           tool-cache: true
 
+      - name: Configure SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.DEPLOY_KEY_SUBMODULES }}
+
+      - name: Add known_hosts file
+        run: |
+          mkdir -p ~/.ssh && echo '${{ secrets.KNOWN_HOSTS }}' > ~/.ssh/known_hosts
+
       - name: Checkout repository
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
         uses: actions/checkout@v4
@@ -44,6 +60,7 @@ jobs:
           ref: ${{ inputs.branch }}
           # Nix Flakes doesn't work on shallow clones
           fetch-depth: 0
+          submodules: recursive
 
       - name: Install Nix
         if: inputs.system == null || (startsWith(matrix.os, 'macos') && endsWith(inputs.system, 'darwin') || startsWith(matrix.os, 'ubuntu') && endsWith(inputs.system, 'linux'))
