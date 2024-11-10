@@ -1,7 +1,7 @@
 {
   pkgs,
   lib ? pkgs.lib,
-  rootPath,
+  flake,
 }@args:
 
 with lib;
@@ -17,9 +17,9 @@ let
   fileList = callPackage ./file-list.nix { };
   script = callPackage ./script { };
 
-  homeBasePath = rootPath + "/home";
-  hostsBasePath = rootPath + "/hosts";
-  nixosBasePath = rootPath + "/nixos";
+  homeBasePath = flake + "/home";
+  hostsBasePath = flake + "/hosts";
+  nixosBasePath = flake + "/nixos";
 
 in
 
