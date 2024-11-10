@@ -10,8 +10,8 @@ let
 
   callPackage = callPackageWith args;
 
-  checks = callPackage ./checks { };
-  pre-commit-checks = callPackage ./pre-commit-checks { };
+  checks = import ./checks { inherit pkgs flake; };
+  pre-commit-checks = import ./pre-commit-checks { inherit pkgs flake; };
 
   attrs = callPackage ./attrs.nix { };
   fileList = callPackage ./file-list.nix { };
