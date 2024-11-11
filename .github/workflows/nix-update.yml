@@ -46,29 +46,11 @@ jobs:
       update_available: "${{ steps.commit.outputs.changes_detected }}"
 
     steps:
-      - name: "Configure SSH agent"
-        env:
-          DEPLOY_KEY_SUBMODULES: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
-        if: "${{ env.DEPLOY_KEY_SUBMODULES != '' }}"
-        uses: "webfactory/ssh-agent@v0.9.0"
-        with:
-          ssh-private-key: |
-            ${{ secrets.DEPLOY_KEY_SUBMODULES }}
-
-      - name: "Add known_hosts file"
-        env:
-          KNOWN_HOSTS: "${{ secrets.KNOWN_HOSTS }}"
-        if: "${{ env.KNOWN_HOSTS != '' }}"
-        run: |
-          mkdir -p ~/.ssh && echo '${{ secrets.KNOWN_HOSTS }}' > ~/.ssh/known_hosts
-
       - name: "Checkout repository"
         uses: "actions/checkout@v4"
         with:
           token: "${{ secrets.PUSH_PAT || github.token }}"
           fetch-depth: 0
-          ssh-key: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
-          submodules: "recursive"
 
       - name: "Install Nix"
         uses: "DeterminateSystems/nix-installer-action@v14"
@@ -100,6 +82,10 @@ jobs:
       branch: "${{ needs.update.outputs.branch }}"
       nix-command: "${{ inputs.nix-check-command }}"
       system: "x86_64-linux"
+    secrets:
+      CACHIX_AUTH_TOKEN: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+      DEPLOY_KEY_SUBMODULES: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
+      KNOWN_HOSTS: "${{ secrets.KNOWN_HOSTS }}"
 
   build_aarch64:
     uses: "rake5k/flake-commons/.github/workflows/nix-ci-arm.yml@main"
@@ -109,6 +95,10 @@ jobs:
       branch: "${{ needs.update.outputs.branch }}"
       nix-command: "${{ inputs.nix-check-command }}"
       system: "aarch64-linux"
+    secrets:
+      CACHIX_AUTH_TOKEN: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+      DEPLOY_KEY_SUBMODULES: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
+      KNOWN_HOSTS: "${{ secrets.KNOWN_HOSTS }}"
 
   merge:
     runs-on: "ubuntu-latest"
