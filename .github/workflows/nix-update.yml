@@ -27,12 +27,6 @@ on:  # yamllint disable-line rule:truthy
       CACHIX_AUTH_TOKEN:
         required: false
         description: "Token to authenticate against Cachix"
-      DEPLOY_KEY_SUBMODULES:
-        required: false
-        description: "Deploy key for checking out submodules"
-      KNOWN_HOSTS:
-        required: false
-        description: "Content of the known_hosts file"
       PUSH_PAT:
         required: false
         description: "Token to authenticate against GitHub on push trigger"
@@ -53,7 +47,7 @@ jobs:
           fetch-depth: 0
 
       - name: "Install Nix"
-        uses: "DeterminateSystems/nix-installer-action@v14"
+        uses: "DeterminateSystems/nix-installer-action@v15"
 
       - name: "Update inputs"
         run: "nix flake update"
