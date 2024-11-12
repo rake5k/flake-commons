@@ -27,6 +27,12 @@ on:  # yamllint disable-line rule:truthy
       CACHIX_AUTH_TOKEN:
         required: false
         description: "Token to authenticate against Cachix"
+      DEPLOY_KEY_SUBMODULES:
+        required: false
+        description: "Deploy key for checking out submodules"
+      KNOWN_HOSTS:
+        required: false
+        description: "Content of the known_hosts file"
       PUSH_PAT:
         required: false
         description: "Token to authenticate against GitHub on push trigger"
@@ -40,6 +46,22 @@ jobs:
       update_available: "${{ steps.commit.outputs.changes_detected }}"
 
     steps:
+      - name: "Configure SSH agent"
+        env:
+          DEPLOY_KEY_SUBMODULES: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
+        if: "${{ env.DEPLOY_KEY_SUBMODULES != '' }}"
+        uses: "webfactory/ssh-agent@v0.9.0"
+        with:
+          ssh-private-key: |
+            ${{ secrets.DEPLOY_KEY_SUBMODULES }}
+
+      - name: "Add known_hosts file"
+        env:
+          KNOWN_HOSTS: "${{ secrets.KNOWN_HOSTS }}"
+        if: "${{ env.KNOWN_HOSTS != '' }}"
+        run: |
+          mkdir -p ~/.ssh && echo '${{ secrets.KNOWN_HOSTS }}' > ~/.ssh/known_hosts
+
       - name: "Checkout repository"
         uses: "actions/checkout@v4"
         with:
