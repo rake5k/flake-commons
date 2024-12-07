@@ -29,6 +29,8 @@ in
   inherit (fileList) getFileList getRecursiveNixFileList getRecursiveDefaultNixFileList;
   inherit (script) mkScript;
 
+  formatter = pkgs.nixfmt-rfc-style;
+
   mkHomePath = p: homeBasePath + p;
   mkHostPath = host: p: hostsBasePath + "/${host}" + p;
   mkNixosPath = p: nixosBasePath + p;

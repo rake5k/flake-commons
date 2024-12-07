@@ -32,17 +32,30 @@
 
       lib = import ./lib;
 
-      formatter = forAllSystems (system: nixpkgs.legacyPackages."${system}".nixfmt-rfc-style);
+      formatter = forAllSystems (
+        system:
+        (
+          let
+            pkgs = nixpkgsFor.${system};
+          in
+          import ./lib {
+            inherit pkgs;
+            flake = self;
+          }
+        ).formatter
+      );
 
       checks = forAllSystems (
         system:
-        let
-          pkgs = nixpkgsFor.${system};
-        in
-        import ./lib/checks {
-          inherit pkgs;
-          flake = self;
-        }
+        (
+          let
+            pkgs = nixpkgsFor.${system};
+          in
+          import ./lib {
+            inherit pkgs;
+            flake = self;
+          }
+        ).checks
       );
 
       devShells = forAllSystems (
