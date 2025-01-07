@@ -1,0 +1,72 @@
+---
+name: "Nix - Update inputs (garnix)"
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      base-branch:
+        description: "Base branch to update"
+        required: false
+        type: "string"
+        default: "main"
+    secrets:
+      DEPLOY_KEY_SUBMODULES:
+        required: false
+        description: "Deploy key for checking out submodules"
+      KNOWN_HOSTS:
+        required: false
+        description: "Content of the known_hosts file"
+      PUSH_PAT:
+        required: false
+        description: "Token to authenticate against GitHub on push trigger"
+
+jobs:
+  update:
+    permissions:
+      contents: "write"
+      pull-requests: "write"
+
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Configure SSH agent"
+        env:
+          DEPLOY_KEY_SUBMODULES: "${{ secrets.DEPLOY_KEY_SUBMODULES }}"
+        if: "${{ env.DEPLOY_KEY_SUBMODULES != '' }}"
+        uses: "webfactory/ssh-agent@v0.9.0"
+        with:
+          ssh-private-key: |
+            ${{ secrets.DEPLOY_KEY_SUBMODULES }}
+
+      - name: "Add known_hosts file"
+        env:
+          KNOWN_HOSTS: "${{ secrets.KNOWN_HOSTS }}"
+        if: "${{ env.KNOWN_HOSTS != '' }}"
+        run: |
+          mkdir -p ~/.ssh && echo '${{ secrets.KNOWN_HOSTS }}' > ~/.ssh/known_hosts
+
+      - name: "Checkout repository"
+        uses: "actions/checkout@v4"
+        with:
+          token: "${{ secrets.PUSH_PAT || github.token }}"
+          fetch-depth: 0
+
+      - name: "Install Nix"
+        uses: "DeterminateSystems/nix-installer-action@v15"
+
+      - name: "Update flake.lock"
+        uses: "DeterminateSystems/update-flake-lock@v24"
+        id: "update"
+        with:
+          commit-msg: "chore(flake): bump inputs"
+          pr-title: "chore(flake): bump inputs"
+          pr-labels: |
+            dependencies
+            automated
+
+      - name: "Merge Pull Request"
+        run: |
+          if [ -n "${{ steps.update.outputs.pull-request-number }}" ]; then
+            gh pr merge --auto --rebase ${{ steps.update.outputs.pull-request-number }}
+          fi
+        env:
+          GH_TOKEN: "${{ github.token }}"
