@@ -8,5 +8,6 @@ jobs:
     uses: "rake5k/flake-commons/.github/workflows/nix-ci.yml@main"
     with:
       branch: "${{ github.ref_name }}"
+      nix-command: "run nixpkgs#nix-fast-build -- --skip-cached --no-nom"
     secrets:
       CACHIX_AUTH_TOKEN: "${{ secrets.CACHIX_AUTH_TOKEN }}"
