@@ -1,5 +1,5 @@
 ---
-name: "Nix - Update inputs (garnix)"
+name: "Nix - Update inputs"
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
