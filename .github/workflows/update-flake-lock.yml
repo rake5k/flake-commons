@@ -18,6 +18,9 @@ on:  # yamllint disable-line rule:truthy
       PUSH_PAT:
         required: false
         description: "Token to authenticate against GitHub on push trigger"
+      GH_PRIVATE_INPUT_TOKEN:
+        required: false
+        description: "Token to authenticate against GitHub for updating private inputs"
 
 jobs:
   update:
@@ -62,6 +65,8 @@ jobs:
           pr-labels: |
             dependencies
             automated
+          nix-options: "--access-tokens github.com=${{ secrets.GH_PRIVATE_INPUT_TOKEN || github.token }}"
+          token: "${{ secrets.GH_PRIVATE_INPUT_TOKEN || github.token }}"
 
       - name: "Merge Pull Request"
         run: |
