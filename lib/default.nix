@@ -20,11 +20,21 @@ let
   homeBasePath = flake + "/home";
   hostsBasePath = flake + "/hosts";
   nixosBasePath = flake + "/nixos";
+  nixDarwinBasePath = flake + "/nix-darwin";
+  nixOnDroidBasePath = flake + "/nix-on-droid";
 
 in
 
 {
-  inherit checks pre-commit-checks;
+  inherit
+    checks
+    homeBasePath
+    nixosBasePath
+    nixDarwinBasePath
+    nixOnDroidBasePath
+    pre-commit-checks
+    ;
+
   inherit (attrs) attrsToList genAttrs';
   inherit (fileList) getFileList getRecursiveNixFileList getRecursiveDefaultNixFileList;
   inherit (script) mkScript;
@@ -34,4 +44,6 @@ in
   mkHomePath = p: homeBasePath + p;
   mkHostPath = host: p: hostsBasePath + "/${host}" + p;
   mkNixosPath = p: nixosBasePath + p;
+  mkNixDarwinPath = p: nixDarwinBasePath + p;
+  mkNixOnDroidPath = p: nixOnDroidBasePath + p;
 }
