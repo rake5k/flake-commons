@@ -48,7 +48,7 @@ jobs:
           mkdir -p ~/.ssh && echo '${{ secrets.KNOWN_HOSTS }}' > ~/.ssh/known_hosts
 
       - name: "Checkout repository"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v6"
         with:
           token: "${{ secrets.PUSH_PAT || github.token }}"
           fetch-depth: 0
