@@ -8,7 +8,7 @@
     deadnix --fail ${flake}
   '';
 
-  nixfmt = pkgs.runCommand "check-nixfmt" { buildInputs = [ pkgs.nixfmt-rfc-style ]; } ''
+  nixfmt = pkgs.runCommand "check-nixfmt" { buildInputs = [ pkgs.nixfmt ]; } ''
     mkdir $out
     nixfmt --check ${flake}
   '';
