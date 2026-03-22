@@ -2,16 +2,20 @@
   pkgs,
   lib ? pkgs.lib,
   flake,
+  treefmtModule ? { },
 }@args:
-
-with lib;
 
 let
 
-  callPackage = callPackageWith args;
+  treefmt = flake.inputs.treefmt-nix.lib.evalModule pkgs {
+    imports = [
+      ./treefmt.nix
+      treefmtModule
+    ];
+  };
 
-  checks = import ./checks { inherit pkgs flake; };
-  pre-commit-checks = import ./pre-commit-checks { inherit pkgs flake; };
+  shell = import ./shell { inherit pkgs treefmt; };
+  callPackage = lib.callPackageWith args;
 
   attrs = callPackage ./attrs.nix { };
   fileList = callPackage ./file-list.nix { };
@@ -27,23 +31,32 @@ in
 
 {
   inherit
-    checks
     homeBasePath
     nixosBasePath
     nixDarwinBasePath
     nixOnDroidBasePath
-    pre-commit-checks
     ;
 
   inherit (attrs) attrsToList genAttrs';
   inherit (fileList) getFileList getRecursiveNixFileList getRecursiveDefaultNixFileList;
   inherit (script) mkScript;
-
-  formatter = pkgs.nixfmt-tree;
+  inherit (shell) mkShell;
 
   mkHomePath = p: homeBasePath + p;
   mkHostPath = host: p: hostsBasePath + "/${host}" + p;
   mkNixosPath = p: nixosBasePath + p;
   mkNixDarwinPath = p: nixDarwinBasePath + p;
   mkNixOnDroidPath = p: nixOnDroidBasePath + p;
+
+  flake = {
+    formatter = treefmt.config.build.wrapper;
+
+    checks.formatting = treefmt.config.build.check flake;
+
+    devShells = {
+      default = shell.mkShell {
+        name = "Nix Commons Flake";
+      };
+    };
+  };
 }

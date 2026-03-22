@@ -3,17 +3,15 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
-    pre-commit-hooks = {
-      url = "github:cachix/pre-commit-hooks.nix";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
   outputs =
     { self, nixpkgs, ... }:
     let
-      name = "flake-commons";
-
       # System types to support.
       supportedSystems = [
         "aarch64-darwin"
@@ -27,63 +25,22 @@
 
       # Nixpkgs instantiated for supported system types.
       nixpkgsFor = forAllSystems (system: nixpkgs.legacyPackages.${system});
+
+      mkLib =
+        system:
+        import ./lib {
+          pkgs = nixpkgsFor."${system}";
+          flake = self;
+        };
     in
     {
 
       lib = import ./lib;
 
-      formatter = forAllSystems (
-        system:
-        (
-          let
-            pkgs = nixpkgsFor.${system};
-          in
-          import ./lib {
-            inherit pkgs;
-            flake = self;
-          }
-        ).formatter
-      );
+      formatter = forAllSystems (system: (mkLib system).flake.formatter);
 
-      checks = forAllSystems (
-        system:
-        (
-          let
-            pkgs = nixpkgsFor.${system};
-          in
-          import ./lib {
-            inherit pkgs;
-            flake = self;
-          }
-        ).checks
-      );
+      checks = forAllSystems (system: (mkLib system).flake.checks);
 
-      devShells = forAllSystems (
-        system:
-        let
-          pkgs = nixpkgsFor.${system};
-          preCommitShellHook =
-            (import ./lib/pre-commit-checks {
-              inherit pkgs;
-              flake = self;
-            }).shellHook;
-        in
-        {
-          default = pkgs.mkShell {
-            inherit name;
-
-            buildInputs = with pkgs; [
-              # banner printing on enter
-              figlet
-              lolcat
-            ];
-
-            shellHook = ''
-              figlet ${name} | lolcat --freq 0.5
-              ${preCommitShellHook}
-            '';
-          };
-        }
-      );
+      devShells = forAllSystems (system: (mkLib system).flake.devShells);
     };
 }
