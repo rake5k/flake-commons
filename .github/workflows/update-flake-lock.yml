@@ -68,10 +68,10 @@ jobs:
           nix-options: "--access-tokens github.com=${{ secrets.GH_PRIVATE_INPUT_TOKEN || github.token }}"
           token: "${{ secrets.GH_PRIVATE_INPUT_TOKEN || github.token }}"
 
-      - name: "Merge Pull Request"
+      - name: "Merge Pull Request without waiting for checks"
         run: |
           if [ -n "${{ steps.update.outputs.pull-request-number }}" ]; then
-            gh pr merge --auto --rebase ${{ steps.update.outputs.pull-request-number }}
+            gh pr merge --admin --rebase ${{ steps.update.outputs.pull-request-number }}
           fi
         env:
           GH_TOKEN: "${{ github.token }}"
