@@ -21,7 +21,12 @@ let
       cat > .git/hooks/pre-commit << 'HOOK'
     #!/usr/bin/env bash
     echo "Running formatting checks..."
-    if ! treefmt --fail-on-change; then
+    # Format only staged paths (working-tree copies); untracked files are skipped.
+    mapfile -d "" files < <(git diff --cached --name-only --diff-filter=ACMR -z)
+    if [ ''${#files[@]} -eq 0 ]; then
+      exit 0
+    fi
+    if ! ${treefmt.config.build.wrapper}/bin/treefmt --fail-on-change "''${files[@]}"; then
       echo ""
       echo "Formatting issues found. Run 'treefmt' to fix them."
       exit 1
