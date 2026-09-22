@@ -20,14 +20,15 @@ repository.
 The repository is a small Nix flake that exposes a reusable library of utilities. Its key components
 are:
 
-1. **`flake.nix`** – The flake entry point. It defines:
-   - `lib`: Imported from the `lib` directory.
-   - `formatter`: A formatter for all supported systems that uses `nixfmt-rfc-style`.
-   - `checks`: A system‑specific set of checks that invoke the functions from `lib`.
-   - `devShells`: A development shell per system that prints a banner with `figlet`/`lolcat` and
-     sources a pre‑commit hook shell script.
+1. **`flake.nix`** – The flake entry point. It builds `lib/flake.nix` from its own `nixpkgs` and
+   `treefmt-nix` inputs, then expresses its own outputs through `eachSystem` — `formatter` and
+   `checks.formatting` come from the seed, `devShells` and `checks.lib-tests` from the callback. The
+   `lib` output is a functor: callable as `flake-commons.lib { pkgs, flake, ... }`, and carrying
+   `eachSystem` and `defaultSystems` as attributes.
 
 2. **`lib` directory** – Contains reusable Nix modules:
+   - **`flake.nix`**: Provides `eachSystem`, the downstream entry point, plus `defaultSystems` and
+     the `mergeOutputs`/`transpose` helpers it is built from. Takes `{ nixpkgs, treefmtNix }`.
    - **`attrs.nix`**: Provides helper functions `attrsToList` and `genAttrs'` for manipulating
      attribute sets.
    - **`file-list.nix`**: Offers functions to enumerate files in a directory tree, filtering by
@@ -48,5 +49,6 @@ are:
 
 ---
 
-**Note**: This repository is a minimal example and does not contain unit tests at present. Future
-contributors may add a `tests` directory and corresponding checks.
+**Note**: `tests/lib-flake.nix` covers `lib/flake.nix` with `lib.runTests` and is wired in as the
+`lib-tests` check. Add further tests there or alongside it, and reference them from the `eachSystem`
+callback in `flake.nix`.
