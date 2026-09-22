@@ -5,15 +5,20 @@ repository.
 
 ## Common Commands
 
-- **Build**: `nix build` – Builds the default output of the flake.
-- **Check**: `nix flake check` – Runs all checks defined in the flake. Checks include linting and
-  any unit tests that may be added.
-- **Format**: `nix fmt` – Runs the formatter `nixfmt-rfc-style` defined in `flake.nix`.
-- **Run a single check**: `nix flake check --check <check-name>` – Replace `<check-name>` with the
-  name of a specific check. If no checks are defined, this command will report that none are
-  available.
-- **Launch dev shell**: `nix develop` – Starts a development shell with utilities such as `figlet`
-  and `lolcat` pre‑installed.
+- **Check**: `nix flake check` – Evaluates the flake and runs every check: `formatting` (treefmt
+  over the whole tree) and `lib-tests` (`tests/lib-flake.nix`).
+- **Run a single check**: `nix build .#checks.<system>.<name>`, for example
+  `nix build .#checks.x86_64-linux.lib-tests`. There is no flag to select a check by name.
+- **Format**: `nix fmt` – Runs treefmt. `lib/treefmt.nix` enables `nixfmt-rfc-style`, `deadnix`,
+  `statix`, `shellcheck`, `shfmt`, and `prettier`; `biome` and `yamllint` are configured there but
+  left disabled.
+- **Launch dev shell**: `nix develop` – Starts a development shell with `figlet`, `lolcat`, the
+  treefmt wrapper, and every formatter treefmt is configured to run. Entering it installs a
+  `.git/hooks/pre-commit` that formats staged files.
+- **Inspect outputs**: `nix flake show --all-systems` – Without the flag only the current system is
+  listed.
+
+The flake exposes no `packages` output, so a bare `nix build` fails.
 
 ## High‑Level Architecture
 
@@ -32,20 +37,20 @@ are:
    - **`attrs.nix`**: Provides helper functions `attrsToList` and `genAttrs'` for manipulating
      attribute sets.
    - **`file-list.nix`**: Offers functions to enumerate files in a directory tree, filtering by
-     suffix. These are used by the checks to discover files to process.
+     suffix. Consumed by downstream flakes, not by this repository's own checks.
    - **`script` directory**: Provides `mkScript` helper for generating shell scripts.
 
-3. **Development shell** – The `devShell.default` entry installs utilities like `figlet` and
-   `lolcat` and runs a shell hook that prints a colorful banner and sources any pre‑commit hook
-   script.
+3. **Development shell** – `mkShell` in `lib/shell/default.nix` wraps `pkgs.mkShell`, adding
+   `figlet`, `lolcat`, and the treefmt toolchain, printing a banner on entry, and writing a
+   `.git/hooks/pre-commit` that runs treefmt over staged paths.
 
 ## Usage Tips
 
-- Run `nix flake check` to automatically format and lint the code.
+- `nix flake check` verifies formatting; it does not rewrite files. Use `nix fmt` to format.
 - Use `nix develop` to enter a shell where you can experiment with the library functions in
   `flake.nix`.
-- If you add new checks, name them descriptively and reference them in the `flake.nix` `checks`
-  attribute set.
+- If you add new checks, name them descriptively and add them to the `eachSystem` callback in
+  `flake.nix`. They merge alongside the seeded `formatting` check.
 
 ---
 
