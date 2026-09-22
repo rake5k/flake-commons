@@ -3,11 +3,12 @@
   lib ? pkgs.lib,
   flake,
   treefmtModule ? { },
+  treefmtNix ? flake.inputs.treefmt-nix,
 }@args:
 
 let
 
-  treefmt = flake.inputs.treefmt-nix.lib.evalModule pkgs {
+  treefmt = treefmtNix.lib.evalModule pkgs {
     imports = [
       ./treefmt.nix
       treefmtModule
